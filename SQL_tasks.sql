@@ -41,43 +41,27 @@ ORDER BY
     brand;
 
 
-#-----------------------------------------
+#-----------------------------------------Not working    
 # Identify Products with Below-Average Ratings in Their Respective Categories
-
 SELECT 
-    d.product_id, 
+    d.product_id,
     d.product_title,
-    d.brand, 
     d.f_category,
-    r.rating_overall,
-    avg_cat.avg_rating AS category_avg_rating
+    r.rating_overall
 FROM 
     details_intern d
 JOIN 
-    ratings_intern r 
-ON 
-    d.product_id = r.product_id AND d.source = r.source
-JOIN 
-    (
-        -- Subquery to calculate average rating for each category
-        SELECT 
-            d.f_category, 
-            AVG(r.rating_overall) AS avg_rating
-        FROM 
-            details_intern d
-        JOIN 
-            ratings_intern r 
-        ON 
-            d.product_id = r.product_id AND d.source = r.source
-        GROUP BY 
-            d.f_category
-    ) avg_cat
-ON 
-    d.f_category = avg_cat.f_category
+    ratings_intern r ON d.product_id = r.product_id
 WHERE 
-    r.rating_overall < avg_cat.avg_rating
+    r.rating_overall < (
+        SELECT AVG(rating_overall)
+        FROM ratings_intern r2
+        JOIN details_intern d2 ON r2.product_id = d2.product_id
+        WHERE d2.f_category = d.f_category
+    )
 ORDER BY 
     d.f_category, r.rating_overall;
+
 
 
 #------------------------------------
@@ -94,3 +78,4 @@ ORDER BY
     review_week;
 
 #------------------------------------
+# 
